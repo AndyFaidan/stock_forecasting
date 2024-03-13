@@ -10,4 +10,3 @@ seaborn==0.12.2
 plotly_express==0.4.1
 plost==0.2.5
 pickleshare==0.7.5
-pickle
