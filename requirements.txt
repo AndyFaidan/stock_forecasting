@@ -1,5 +1,10 @@
 streamlit==1.31.1
-pandas==2.1.4
-folium==
+pand==2.1.4
+folium==0.16.0
 yfinance==0.2.37
-streamlit_folium==
+streamlit_folium==0.18.0
+numpy==1.26.4
+scikit-learn==1.2.2
+matplotlib==3.8.0
+seaborn==0.12.2
+plotly_express==0.4.1
