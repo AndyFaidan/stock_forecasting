@@ -17,7 +17,7 @@ from PIL import Image
 
 def main():
     # Set page configuration
-    st.set_page_config(layout="wide", page_title="Robin's Cool Dash")
+    st.set_page_config(layout="wide", page_title="KKGI.JK DashBoard For LSTM")
 
     # Load custom styles
     with open('style.css') as f:
