@@ -14,7 +14,7 @@ if "symbols_list" not in st.session_state:
 
 st.set_page_config(
     layout='wide',
-    page_title='Crypto Dashboard'
+    page_title='LSTM FORECAST'
 )
 
 with open('style.css') as f:
