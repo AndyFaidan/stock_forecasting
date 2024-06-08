@@ -128,8 +128,8 @@ if train_button:
         fig_combined.update_layout(title='Stock Price Prediction with Train and Test Points', xaxis_title='Date')
 
     with z2:
-        # Filter data based on time step
-        filtered_df = df.iloc[::time_step]
+        # Filter data to show only rows where Test Predict is not NaN
+        filtered_df = df[df['Test Predict'].notna()]
         st.write(filtered_df[['Date', 'Real', 'Train Predict', 'Test Predict']])
 
     st.success('Model training completed!')
