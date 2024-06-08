@@ -127,8 +127,7 @@ if train_button:
         fig_combined.add_trace(go.Scatter(x=df['Date'], y=df['Test Predict'], mode='markers', name='Test Predict', marker=dict(color='red')))
         fig_combined.update_layout(title='Stock Price Prediction with Train and Test Points', xaxis_title='Date', yaxis_title='Price')
         st.plotly_chart(fig_combined)
-
- with z2:
+     with z2:
         st.write(df[['Date', 'Real', 'Train Predict', 'Test Predict']])
 
     st.success('Model training completed!')
