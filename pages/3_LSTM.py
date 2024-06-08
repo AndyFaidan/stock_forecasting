@@ -65,7 +65,7 @@ with st.form(key='params_form'):
         
         n_lookback, n_forecast = st.columns(2)
         with n_lookback:
-            n_lookback = st.number_input('Lookback', min_value=1, max_value=500, value=30, step=1)
+            n_lookback = st.number_input('Lookback', min_value=1, max_value=500, value=164, step=1)
         with n_forecast:
             n_forecast = st.number_input('Forecast', min_value=10, max_value=730, value=365, step=1, key='period_no_input')
         
