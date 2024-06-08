@@ -8,6 +8,14 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error
 import yfinance as yf
 import plotly.express as px
 import plotly.graph_objects as go
+import tensorflow as tf
+import random
+
+# Set seed for reproducibility
+seed = 42
+np.random.seed(seed)
+tf.random.set_seed(seed)
+random.seed(seed)
 
 if "symbols_list" not in st.session_state:
     st.session_state.symbols_list = None
