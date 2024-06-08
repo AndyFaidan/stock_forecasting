@@ -144,10 +144,10 @@ if train_button:
     rmse, mae, mape, mse, _ = evaluate_model(model, X, Y, scaler)
 
     # Mengonversi nilai-nilai menjadi persentase
-    mape = f"{mape:.2f}%"  # Dua angka di belakang koma untuk MAPE
-    rmse = f"{rmse:.2f}%"  # Dua angka di belakang koma untuk RMSE
-    mae = f"{mae:.2f}%"  # Dua angka di belakang koma untuk MAE
-    mse = f"{mse:.2f}%"  # Dua angka di belakang koma untuk MSE
+    mape = f"{mape:.2f}"  # Dua angka di belakang koma untuk MAPE
+    rmse = f"{rmse:.2f}"  # Dua angka di belakang koma untuk RMSE
+    mae = f"{mae:.2f}"  # Dua angka di belakang koma untuk MAE
+    mse = f"{mse:.2f}"  # Dua angka di belakang koma untuk MSE
 
     rmse_col, mae_col, mape_col, mse_col = st.columns(4)
 
