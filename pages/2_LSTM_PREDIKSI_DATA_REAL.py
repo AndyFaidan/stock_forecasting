@@ -128,7 +128,9 @@ if train_button:
         fig_combined.update_layout(title='Stock Price Prediction with Train and Test Points', xaxis_title='Date', yaxis_title='Price')
         st.plotly_chart(fig_combined)
 
-    with z2:
-        st.write(df[['Date', 'Real', 'Train Predict', 'Test Predict']])
+ with z2:
+        # Filter data based on time step
+        filtered_df = df[df.index % time_step == 0]
+        st.write(filtered_df[['Date', 'Real', 'Train Predict', 'Test Predict']])
 
     st.success('Model training completed!')
