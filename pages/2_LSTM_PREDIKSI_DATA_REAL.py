@@ -99,7 +99,7 @@ with st.form(key='params_form'):
 
     epochs, batch_size = st.columns(2)
     with epochs:
-        epochs_value = st.number_input('Epochs', min_value=1, value=10)
+        epochs_value = st.number_input('Epochs', min_value=1, value=100)
     with batch_size:
         batch_size_value = st.number_input('Batch Size', min_value=1, value=32)
 
