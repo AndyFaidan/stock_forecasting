@@ -129,8 +129,6 @@ if train_button:
         st.plotly_chart(fig_combined)
 
  with z2:
-        # Filter data based on time step
-        filtered_df = df[df.index % time_step == 0]
-        st.write(filtered_df[['Date', 'Real', 'Train Predict', 'Test Predict']])
+        st.write(df[['Date', 'Real', 'Train Predict', 'Test Predict']])
 
     st.success('Model training completed!')
