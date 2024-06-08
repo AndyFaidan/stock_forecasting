@@ -83,8 +83,6 @@ def create_LSTM_model(time_step, epochs, batch_size, optimizer):
 
     return model, df
 
-# Streamlit App
-st.title('Stock Price Prediction with LSTM')
 
 with st.form(key='params_form'):
     st.markdown("""
