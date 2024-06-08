@@ -49,7 +49,7 @@ def evaluate_model(model, X_train, Y_train, scaler):
     return rmse, mae, mape, mse, train_predictions
 
 with st.form(key='params_form'):
-        st.markdown('<p class="params_text">LSTM data PARAMETERS</p>', unsafe_allow_html=True)
+        st.markdown('<p class="params_text">Forcasting Dengan LSTM</p>', unsafe_allow_html=True)
         st.divider()
 
         optimizers = ['adam', 'adamax', 'sgd', 'rmsprop'] 
@@ -63,7 +63,7 @@ with st.form(key='params_form'):
         
         epochs, batch_size = st.columns(2)
         with epochs:
-            epochs = st.number_input('Epochs', min_value=1, value=10)
+            epochs = st.number_input('Epochs', min_value=1, value=200)
         with batch_size:
              batch_size = st.number_input('Batch Size', min_value=1, value=32)
 
