@@ -87,7 +87,7 @@ def create_LSTM_model(time_step, epochs, batch_size, optimizer):
 st.title('Stock Price Prediction with LSTM')
 
 with st.form(key='params_form'):
-    st.markdown('<p class="params_text">Prediksi Data Real LSTM SAHAM KKGI.JK </p>', unsafe_allow_html=True)
+    st.markdown('<p class="params_text">Prediksi Data Real LSTM Saham KKGI.JK </p>', unsafe_allow_html=True)
     st.divider()
 
     optimizers = ['adam', 'adamax', 'sgd', 'rmsprop']
