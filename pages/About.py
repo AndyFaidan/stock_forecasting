@@ -57,7 +57,7 @@ def evaluate_model(model, X_train, Y_train, scaler):
     return rmse, mae, mape, mse, train_predictions
 
 with st.form(key='params_form'):
-        st.markdown('<p class="params_text">Forcasting Dengan LSTM</p>', unsafe_allow_html=True)
+        st.markdown('<p class="params_text">Forecasting Dengan LSTM</p>', unsafe_allow_html=True)
         st.divider()
 
         optimizers = ['adam', 'adamax', 'sgd', 'rmsprop'] 
@@ -139,17 +139,19 @@ if train_button:
 
     st.success('Model training completed!')
 
-    # Line chart of Actual vs Forecast
-    fig = px.line(results.reset_index(), x='Date', y=['Actual', 'Forecast'], title='Actual vs Forecast')
+    # Filter data untuk menampilkan hanya hasil prediksi
+    future_results = results[pd.isnull(results['Actual'])]
+
+    # Line chart of Forecast
+    fig = px.line(future_results.reset_index(), x='Date', y='Forecast', title='Forecast')
     st.plotly_chart(fig, use_container_width=True)
 
-    st.write(future_results[['Forecast']])
+    st.write(future_results[['Forecast']].reset_index(drop=True))  # Reset indeks agar DataFrame dapat ditulis dengan benar
 
-    st.write(results.describe())
-
+    st.write(future_results[['Forecast']].describe())
 
     # Evaluasi model
-    rmse, mae, mape, mse, _ = evaluate_model(model, X, Y, scaler)
+    rmse, mae, mape, mse, _ = evaluate_model(model, X_test, Y_test, scaler)
 
     # Mengonversi nilai-nilai menjadi persentase
     mape = f"{mape:.2f}"  # Dua angka di belakang koma untuk MAPE
@@ -182,3 +184,4 @@ if train_button:
             st.markdown('<div class="box-shadow">', unsafe_allow_html=True)
             st.markdown(f"**MSE**: {mse}")
             st.markdown('</div>', unsafe_allow_html=True)
+
