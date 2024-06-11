@@ -375,20 +375,13 @@ def main():
     fig.update_layout(xaxis=dict(rangeselector = dict(font = dict( color = 'black'))))
 
     st.info('''
-        Hasil analisis klaster menggunakan metode Agglomerative Hierarchical Clustering (AHC) dan K-Means pada data demografis BPS Kabupaten Purwakarta dapat memberikan wawasan yang berharga untuk:
+         Saham KKGI.JK adalah saham dari perusahaan PT Resource Alam Indonesia Tbk yang terdaftar di Bursa Efek Indonesia (BEI) dengan kode ticker KKGI. Berikut adalah beberapa informasi tentang perusahaan dan saham ini:
+        * **Nama Perusahaan:** PT Resource Alam Indonesia Tbk.
+        * **Kode Saham:** KKGI.
+        * **Industri** Pertambangan.
+        * **Produk Utama:** Nikel.
+        * **Deskripsi Singkat:** PT Resource Alam Indonesia Tbk adalah perusahaan yang bergerak di bidang pertambangan, terutama berfokus pada penambangan dan perdagangan Nikel. Selain Nikel , perusahaan ini juga memiliki usaha di bidang energi dan mineral lainnya.
 
-        * **Mengidentifikasi** pola dan kelompok dalam populasi.
-        * **Mendukung** pengambilan keputusan yang terinformasi.
-        * **Mengarahkan** intervensi dengan lebih tepat.
-
-        Analisis ini dapat menjadi **alat penting** bagi **pembuat kebijakan**, **peneliti**, dan **otoritas lokal** dalam:
-
-        * **Memahami** keragaman dalam wilayah tersebut.
-        * **Merancang** strategi pembangunan yang sesuai.
-
-        Dengan menggunakan teknik klaster seperti AHC dan K-Means, kita dapat mengeksplorasi struktur alami dalam data demografis, mengidentifikasi kelompok wilayah dengan karakteristik populasi yang serupa, dan menemukan segmen populasi yang berbeda.
-
-        Analisis ini memberikan landasan untuk **menginformasikan** kebijakan pembangunan wilayah dan **mengeksplorasi** faktor-faktor yang dapat mempengaruhi pola demografis di Kabupaten Purwakarta.
         ''', icon="🧐")
 
 
@@ -420,22 +413,7 @@ def main():
         st.write("Open, High, Low Table")
         st.dataframe(data[['Open', 'High', 'Low']])
 
-    st.info('''
-        Hasil analisis klaster menggunakan metode Agglomerative Hierarchical Clustering (AHC) dan K-Means pada data demografis BPS Kabupaten Purwakarta dapat memberikan wawasan yang berharga untuk:
-
-        * **Mengidentifikasi** pola dan kelompok dalam populasi.
-        * **Mendukung** pengambilan keputusan yang terinformasi.
-        * **Mengarahkan** intervensi dengan lebih tepat.
-
-        Analisis ini dapat menjadi **alat penting** bagi **pembuat kebijakan**, **peneliti**, dan **otoritas lokal** dalam:
-
-        * **Memahami** keragaman dalam wilayah tersebut.
-        * **Merancang** strategi pembangunan yang sesuai.
-
-        Dengan menggunakan teknik klaster seperti AHC dan K-Means, kita dapat mengeksplorasi struktur alami dalam data demografis, mengidentifikasi kelompok wilayah dengan karakteristik populasi yang serupa, dan menemukan segmen populasi yang berbeda.
-
-        Analisis ini memberikan landasan untuk **menginformasikan** kebijakan pembangunan wilayah dan **mengeksplorasi** faktor-faktor yang dapat mempengaruhi pola demografis di Kabupaten Purwakarta.
-        ''', icon="🧐")
+    
         
 if __name__ == '__main__':
     main()
