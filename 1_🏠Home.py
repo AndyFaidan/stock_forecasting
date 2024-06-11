@@ -47,7 +47,7 @@ def main():
         )
 
     # Sidebar to select the start year
-    start_year = st.sidebar.selectbox("Select Start Year", options=range(2014, datetime.now().year + 1), index=0)
+    start_year = st.sidebar.selectbox("Periode Forecast", options=range(2021, datetime.now().year + 1), index=0)
 
     # Generate sparkline data
     np.random.seed(1)
