@@ -143,10 +143,6 @@ if train_button:
     fig = px.line(results.reset_index(), x='Date', y=['Actual', 'Forecast'], title='Actual vs Forecast')
     st.plotly_chart(fig, use_container_width=True)
 
-    st.write(results)
-
-    st.write(results.describe())
-
 
     # Evaluasi model
     rmse, mae, mape, mse, _ = evaluate_model(model, X, Y, scaler)
@@ -182,3 +178,43 @@ if train_button:
             st.markdown('<div class="box-shadow">', unsafe_allow_html=True)
             st.markdown(f"**MSE**: {mse}")
             st.markdown('</div>', unsafe_allow_html=True)
+            
+# Membagi layar menjadi dua kolom
+    col1, col2 = st.columns(2)
+
+        # Menampilkan hasil pada kolom pertama
+    with col1:
+        st.subheader("Forecast Data")
+        st.write(results[results['Forecast'].notna()])
+
+    # Menampilkan deskripsi hasil pada kolom kedua
+    with col2:
+        st.subheader("Description of Results")
+        st.write(results.describe())
+        # Menampilkan grafik dengan karakteristik high dan low di bawah deskripsi hasil
+       
+    st.subheader("Forecast Characteristics")
+
+        # Membuat plot dengan karakteristik high dan low
+    fig_characteristics = go.Figure()
+# Filter high and low forecasts
+    high_forecasts = results[results['Characteristic'] == 'high']
+    low_forecasts = results[results['Characteristic'] == 'low']
+
+# Menggabungkan data prediksi karakteristik high dan low
+    combined_forecasts = pd.concat([high_forecasts, low_forecasts], axis=0).sort_index()
+
+# Plot gabungan prediksi sebagai satu garis
+    if not combined_forecasts.empty:
+        fig_characteristics.add_trace(go.Scatter(x=combined_forecasts.index, y=combined_forecasts['Forecast'],
+                                             mode='lines', line=dict(color='purple'), name='Forcast'))
+
+# Menambahkan garis lurus untuk mean
+    fig_characteristics.add_trace(go.Scatter(x=results.index, y=[mean_value]*len(results.index),
+                                         mode='lines', name='Mean', line=dict(color='green', width=2)))
+
+    fig_characteristics.update_layout(title='Forecast Grafik chart', xaxis_title='Date',
+                                  yaxis_title='Forecast', showlegend=True,
+                                  xaxis=dict(range=['2024-06-01', '2025-07-01']))
+
+    st.plotly_chart(fig_characteristics, use_container_width=True)
