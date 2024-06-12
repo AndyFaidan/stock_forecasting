@@ -26,10 +26,11 @@ def main():
     # Aplikasi Streamlit
     st.title('PREDIKSI ANALISIS LSTM PADA SAHAM KKGI.JK')
 
-    # Tentukan ticker dan tanggal mulai
+    # Aplikasi Streamlit
+    st.title('PREDIKSI ANALISIS LSTM PADA SAHAM KKGI.JK')
+    # Fetch data from Yahoo Finance for KKGI.JK from 2021
     ticker = "KKGI.JK"
-    start_date = "2021-01-01"
-    end_date = datetime.datetime.today().strftime('%Y-%m-%d')
+    data = yf.download(tickers=ticker, period='4y')
 
 # Ambil data dari Yahoo Finance
     data = yf.download(tickers=ticker, start=start_date, end=end_date)
