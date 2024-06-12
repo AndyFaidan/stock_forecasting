@@ -27,12 +27,12 @@ def main():
     st.title('PREDIKSI ANALISIS LSTM PADA SAHAM KKGI.JK')
 
     # Tentukan ticker dan tanggal mulai
-ticker = "KKGI.JK"
-start_date = "2021-01-01"
-end_date = datetime.datetime.today().strftime('%Y-%m-%d')
+    ticker = "KKGI.JK"
+    start_date = "2021-01-01"
+    end_date = datetime.datetime.today().strftime('%Y-%m-%d')
 
 # Ambil data dari Yahoo Finance
-data = yf.download(tickers=ticker, start=start_date, end=end_date)
+    data = yf.download(tickers=ticker, start=start_date, end=end_date)
   
     def add_range_selector(fig):
         fig.update_layout(
