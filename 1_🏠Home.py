@@ -30,7 +30,7 @@ def main():
     st.title('PREDIKSI ANALISIS LSTM PADA SAHAM KKGI.JK')
     # Fetch data from Yahoo Finance for KKGI.JK from 2021
     ticker = "KKGI.JK"
-    data = yf.download(tickers=ticker, period='3y')
+    data = yf.download(tickers=ticker, start='2021-01-01')
  
     def add_range_selector(fig):
         fig.update_layout(
