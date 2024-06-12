@@ -28,7 +28,7 @@ def main():
 
     # Tentukan ticker dan tanggal mulai
 ticker = "KKGI.JK"
-start_date = "2022-01-01"
+start_date = "2021-01-01"
 end_date = datetime.datetime.today().strftime('%Y-%m-%d')
 
 # Ambil data dari Yahoo Finance
@@ -106,7 +106,7 @@ data = yf.download(tickers=ticker, start=start_date, end=end_date)
 
         # Metrik untuk Open, Close, dan Volume
     with a1:
-        if highest_open_price_change >= 2020:
+        if highest_open_price_change >= 2021:
             st.metric("Highest Open Price", f"${data['Open'].max():,.2f}", delta=f"+{highest_open_price_change:.2f}")
         else:
             st.metric("Highest Open Price", f"${data['Open'].max():,.2f}", delta=f"{highest_open_price_change:.2f}")
@@ -127,7 +127,7 @@ data = yf.download(tickers=ticker, start=start_date, end=end_date)
 
 
     with a2:
-        if highest_high_price_change >= 2020:
+        if highest_high_price_change >= 2021:
             st.metric("Highest High Price", f"${data['High'].max():,.2f}", delta=f"+{highest_high_price_change:.2f}")
         else:
             st.metric("Highest High Price", f"${data['High'].max():,.2f}", delta=f"{highest_high_price_change:.2f}")
@@ -147,7 +147,7 @@ data = yf.download(tickers=ticker, start=start_date, end=end_date)
         st.markdown("<div style='text-align:center; color:green;'>HIGH KKGI.JK</div>", unsafe_allow_html=True)
 
     with a3:
-        if highest_volume_change >= 2020:
+        if highest_volume_change >= 2021:
             st.metric("Highest Volume", f"{data['Volume'].max():,.2f}", delta=f"+{highest_volume_change:.2f}")
         else:
             st.metric("Highest Volume", f"{data['Volume'].max():,.2f}", delta=f"{highest_volume_change:.2f}")
@@ -204,7 +204,7 @@ data = yf.download(tickers=ticker, start=start_date, end=end_date)
     x_sparkline = np.arange(len(sparkline_data))
 
     with b1:
-        if highest_close_price_change >= 2020:
+        if highest_close_price_change >= 2021:
             st.metric("Highest Close Price", f"${data['Close'].max():,.2f}", delta=f"+{highest_close_price_change:.2f}")
         else:
             st.metric("Highest Close Price", f"${data['Close'].max():,.2f}", delta=f"{highest_close_price_change:.2f}")
@@ -223,7 +223,7 @@ data = yf.download(tickers=ticker, start=start_date, end=end_date)
         st.plotly_chart(fig_sparkline_b1, use_container_width=True)
 
     with b2:
-        if lowest_close_price_change >= 2020:
+        if lowest_close_price_change >= 2021:
             st.metric("Lowest Close Price", f"${data['Close'].min():,.2f}", delta=f"+{lowest_close_price_change:.2f}")
         else:
             st.metric("Lowest Close Price", f"${data['Close'].min():,.2f}", delta=f"{lowest_close_price_change:.2f}")
@@ -242,7 +242,7 @@ data = yf.download(tickers=ticker, start=start_date, end=end_date)
         st.plotly_chart(fig_sparkline_b2, use_container_width=True)
 
     with b3:
-        if average_daily_volume_change >= 2020:
+        if average_daily_volume_change >= 2021:
             st.metric("Average Daily Volume", f"{round(data['Volume'].mean(), 2):,.2f}", delta=f"+{average_daily_volume_change:.2f}")
         else:
             st.metric("Average Daily Volume", f"{round(data['Volume'].mean(), 2):,.2f}", delta=f"{average_daily_volume_change:.2f}")
