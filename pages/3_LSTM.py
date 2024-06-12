@@ -80,7 +80,7 @@ with st.form(key='params_form'):
         st.markdown('')
 
 if train_button:
-    data = yf.download(tickers='KKGI.JK', period='4y')
+    data = yf.download(tickers='KKGI.JK', start='2021-01-01')
     scaler = MinMaxScaler(feature_range=(0, 1))
     y = data['Close'].values.reshape(-1, 1)
     y_scaled = scaler.fit_transform(y)
