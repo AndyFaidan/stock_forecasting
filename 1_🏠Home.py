@@ -377,7 +377,7 @@ def main():
     fig.update_layout(xaxis=dict(rangeselector = dict(font = dict( color = 'black'))))
 
     st.info('''
-        Sahammmmmmmmmmmmmm KKGI.JK adalah saham dari perusahaan PT Resource Alam Indonesia Tbk yang terdaftar di Bursa Efek Indonesia (BEI) dengan kode ticker KKGI. Berikut adalah beberapa informasi tentang perusahaan dan saham ini:
+        Saham KKGI.JK adalah saham dari perusahaan PT Resource Alam Indonesia Tbk yang terdaftar di Bursa Efek Indonesia (BEI) dengan kode ticker KKGI. Berikut adalah beberapa informasi tentang perusahaan dan saham ini:
         * **Nama Perusahaan:** PT Resource Alam Indonesia Tbk.
         * **Kode Saham:** KKGI.JK
         * **Industri** Pertambangan.
