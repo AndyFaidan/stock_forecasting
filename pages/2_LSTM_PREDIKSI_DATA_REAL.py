@@ -87,7 +87,7 @@ def create_LSTM_model(time_step, epochs, batch_size, optimizer):
 with st.form(key='params_form'):
     st.markdown("""
         <div style="display: flex; justify-content: center;">
-            <h2>Prediksi Data Real LSTM Saham KKGI.JK</h2>
+            <h2>Perbandingan Data Real dan Prediksi LSTM</h2>
         </div>
     """, unsafe_allow_html=True)
     st.divider()
