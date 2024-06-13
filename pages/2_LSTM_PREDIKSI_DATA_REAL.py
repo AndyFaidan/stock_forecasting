@@ -116,10 +116,6 @@ if train_button:
         fig = px.line(df, x='Date', y=['Real', 'Train Predict', 'Test Predict'], title='Stock Price Prediction')
         st.plotly_chart(fig)
         
-        # Area chart
-        fig_area = px.area(df, x='Date', y=['Real', 'Train Predict', 'Test Predict'], title='Area Chart of Stock Price Prediction')
-        st.plotly_chart(fig_area)
-
         ## Line chart with scatter plot and area
         fig_combined = go.Figure()
         fig_combined.add_trace(go.Scatter(x=df['Date'], y=df['Real'], mode='lines', name='Real', fill='tozeroy'))
