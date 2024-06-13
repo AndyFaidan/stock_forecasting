@@ -68,7 +68,7 @@ st.markdown("""
 
 # Create the form
 with st.form(key='params_form'):
-        st.markdown('<p class="params_text">Forecasting Dengan LSTM</p>', unsafe_allow_html=True)
+        st.markdown('<p class="params_text">Prediksi Dengan LSTM</p>', unsafe_allow_html=True)
         st.divider()
 
         optimizers = ['adam', 'adamax', 'sgd', 'rmsprop'] 
