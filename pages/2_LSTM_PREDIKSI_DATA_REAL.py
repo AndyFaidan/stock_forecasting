@@ -95,7 +95,7 @@ with st.form(key='params_form'):
     optimizers = ['adam', 'adamax', 'sgd', 'rmsprop']
     optimizer = st.selectbox('Optimizer', optimizers, key='optimizer_selectbox')
 
-    time_step = st.number_input('Time Step', min_value=1, max_value=500, value=30, step=1)
+    time_step = st.number_input('Lookback', min_value=1, max_value=500, value=30, step=1)
 
     epochs, batch_size = st.columns(2)
     with epochs:
