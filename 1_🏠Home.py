@@ -25,9 +25,6 @@ def main():
 
     # Aplikasi Streamlit
     st.title('PREDIKSI ANALISIS LSTM PADA SAHAM KKGI.JK')
-
-    # Aplikasi Streamlit
-    st.title('PREDIKSI ANALISIS LSTM PADA SAHAM KKGI.JK')
     # Fetch data from Yahoo Finance for KKGI.JK from 2021
     ticker = "KKGI.JK"
     data = yf.download(tickers=ticker, start='2021-01-01')
