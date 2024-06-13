@@ -120,13 +120,14 @@ if train_button:
         fig_area = px.area(df, x='Date', y=['Real', 'Train Predict', 'Test Predict'], title='Area Chart of Stock Price Prediction')
         st.plotly_chart(fig_area)
 
-        # Line chart with scatter plot
+        ## Line chart with scatter plot and area
         fig_combined = go.Figure()
-        fig_combined.add_trace(go.Scatter(x=df['Date'], y=df['Real'], mode='lines', name='Real'))
-        fig_combined.add_trace(go.Scatter(x=df['Date'], y=df['Train Predict'], mode='markers', name='Train Predict', marker=dict(color='blue')))
-        fig_combined.add_trace(go.Scatter(x=df['Date'], y=df['Test Predict'], mode='markers', name='Test Predict', marker=dict(color='red')))
+        fig_combined.add_trace(go.Scatter(x=df['Date'], y=df['Real'], mode='lines', name='Real', fill='tozeroy'))
+        fig_combined.add_trace(go.Scatter(x=df['Date'], y=df['Train Predict'], mode='lines', name='Train Predict', fill='tonexty'))
+        fig_combined.add_trace(go.Scatter(x=df['Date'], y=df['Test Predict'], mode='lines', name='Test Predict', fill='tonexty'))
         fig_combined.update_layout(title='Stock Price Prediction with Train and Test Points', xaxis_title='Date', yaxis_title='Price')
         st.plotly_chart(fig_combined)
+
 
 
     st.success('Model training completed!')
