@@ -49,7 +49,7 @@ Tujuan dari aplikasi ini adalah untuk membantu pengguna membuat prediksi yang ak
 
 ## Detail Teknis
 - **Model**: Model LSTM terdiri dari beberapa lapisan dengan konfigurasi tertentu.
-- **Perpustakaan**: Perpustakaan utama yang digunakan termasuk TensorFlow, Keras, Pandas, dan yfinance.
+- **Perpustakaan**: Perpustakaan utama yang digunakan termasuk  Keras, Pandas, dan yfinance.
 
 ## Informasi Pengembang
 **Penulis**: Firhan Abdillah Mahbubi
