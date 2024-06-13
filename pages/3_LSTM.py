@@ -220,7 +220,7 @@ if train_button:
 # Plot gabungan prediksi sebagai satu garis
     if not combined_forecasts.empty:
         fig_characteristics.add_trace(go.Scatter(x=combined_forecasts.index, y=combined_forecasts['Forecast'],
-                                             mode='lines', line=dict(color='purple'), name='Forcast'))
+                                             mode='lines', line=dict(color='blue'), name='Forcast'))
 
 # Menambahkan garis lurus untuk mean
     fig_characteristics.add_trace(go.Scatter(x=results.index, y=[mean_value]*len(results.index),
