@@ -91,7 +91,7 @@ with st.form(key='params_form'):
     """, unsafe_allow_html=True)
     st.divider()
 
-    optimizers = ['adam', 'adamax', 'sgd', 'rmsprop']
+    optimizers = ['adam', 'adamax', 'Stochastic Gradient Descent (SGD)', 'rmsprop']
     optimizer = st.selectbox('Optimizer', optimizers, key='optimizer_selectbox')
 
     time_step = st.number_input('Lookback', min_value=1, max_value=500, value=164, step=1)
