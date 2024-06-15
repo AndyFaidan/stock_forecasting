@@ -83,7 +83,6 @@ def create_LSTM_model(time_step, epochs, batch_size, optimizer):
 
     return model, df
 
-
 with st.form(key='params_form'):
     st.markdown("""
         <div style="display: flex; justify-content: center;">
@@ -111,12 +110,17 @@ if train_button:
     # Create Model
     model, df = create_LSTM_model(time_step, epochs_value, batch_size_value, optimizer)
 
+    # Hitung jarak nilai antara real dan prediksi
+    df['Train Error'] = df.apply(lambda row: abs(row['Real'] - row['Train Predict']) if pd.notnull(row['Train Predict']) else None, axis=1)
+    df['Test Error'] = df.apply(lambda row: abs(row['Real'] - row['Test Predict']) if pd.notnull(row['Test Predict']) else None, axis=1)
+
     z1, z2 = st.columns((8, 2.5))
     with z1:
+        # Line chart for data comparison
         fig = px.line(df, x='Date', y=['Real', 'Train Predict', 'Test Predict'], title='Data Real dan Hasil Prediksi')
         st.plotly_chart(fig)
         
-       # Line chart with scatter plot and area
+        # Line chart with scatter plot and area
         fig_combined = go.Figure()
         fig_combined.add_trace(go.Scatter(x=df['Date'], y=df['Real'], mode='lines', name='Real Data', fill='tozeroy'))
         fig_combined.add_trace(go.Scatter(x=df['Date'], y=df['Train Predict'], mode='lines', name='Train Predict', fill='tonexty'))
