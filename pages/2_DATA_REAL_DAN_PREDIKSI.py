@@ -114,6 +114,14 @@ if train_button:
     df['Train Error'] = df.apply(lambda row: abs(row['Real'] - row['Train Predict']) if pd.notnull(row['Train Predict']) else None, axis=1)
     df['Test Error'] = df.apply(lambda row: abs(row['Real'] - row['Test Predict']) if pd.notnull(row['Test Predict']) else None, axis=1)
 
+    # Hitung rata-rata kesalahan
+    avg_train_error = df['Train Error'].mean()
+    avg_test_error = df['Test Error'].mean()
+
+    # Tampilkan rata-rata kesalahan
+    st.markdown(f"### Rata-rata Train Error: {avg_train_error:.4f}")
+    st.markdown(f"### Rata-rata Test Error: {avg_test_error:.4f}")
+
     z1, z2 = st.columns((8, 2.5))
     with z1:
         # Line chart for data comparison
