@@ -93,7 +93,7 @@ with st.form(key='params_form'):
 if train_button:
     # Ambil data dari Yahoo Finance untuk KKGI.JK
     ticker = "KKGI.JK"
-    data = yf.download(tickers=ticker, period='4y')
+    data = yf.download(tickers=ticker, period='3y')
     scaler = MinMaxScaler(feature_range=(0, 1))
     y = data['Close'].values.reshape(-1, 1)
     y_scaled = scaler.fit_transform(y)
