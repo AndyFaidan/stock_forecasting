@@ -107,16 +107,14 @@ with st.form(key='params_form'):
     st.markdown('')
 
 if train_button:
+    st.success('Model training completed!')
+
     # Create Model
     model, df = create_LSTM_model(time_step, epochs_value, batch_size_value, optimizer)
 
     # Hitung jarak nilai antara real dan prediksi
     df['Train Error'] = df.apply(lambda row: abs(row['Real'] - row['Train Predict']) if pd.notnull(row['Train Predict']) else None, axis=1)
     df['Test Error'] = df.apply(lambda row: abs(row['Real'] - row['Test Predict']) if pd.notnull(row['Test Predict']) else None, axis=1)
-
-    # Hitung rata-rata kesalahan
-    avg_train_error = df['Train Error'].mean()
-    avg_test_error = df['Test Error'].mean()
 
     # Tampilkan rata-rata kesalahan
     st.markdown(f"### Rata-rata Train Error: {avg_train_error:.4f}")
@@ -145,5 +143,7 @@ if train_button:
         # Tampilkan tabel jarak nilai
         st.markdown("### Jarak Nilai antara Real dan Prediksi")
         st.dataframe(df[['Date', 'Train Error', 'Test Error']])
-
-    st.success('Model training completed!')
+    # Hitung rata-rata kesalahan
+    avg_train_error = df['Train Error'].mean()
+    avg_test_error = df['Test Error'].mean()
+    
