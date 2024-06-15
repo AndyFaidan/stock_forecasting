@@ -94,7 +94,8 @@ if train_button:
     ticker = "KKGI.JK"
     start_date = "2021-01-01"
     end_date = datetime.now().strftime('%Y-%m-%d')
-    data = yf.download(tickers=ticker, start=start_date, end=end_date
+    data = yf.download(tickers=ticker, start=start_date, end=end_date)
+                       
     scaler = MinMaxScaler(feature_range=(0, 1))
     y = data['Close'].values.reshape(-1, 1)
     y_scaled = scaler.fit_transform(y)
