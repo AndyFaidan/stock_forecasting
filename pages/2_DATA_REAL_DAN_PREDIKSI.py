@@ -113,15 +113,21 @@ if train_button:
 
     z1, z2 = st.columns((8, 2.5))
     with z1:
-        fig = px.line(df, x='Date', y=['Real', 'Train Predict', 'Test Predict'], title='Stock Price Prediction')
+        fig = px.line(df, x='Date', y=['Real', 'Train Predict', 'Test Predict'], title='Data Real dan Hasil Prediksi')
         st.plotly_chart(fig)
         
-        ## Line chart with scatter plot and area
+       # Line chart with scatter plot and area
         fig_combined = go.Figure()
-        fig_combined.add_trace(go.Scatter(x=df['Date'], y=df['Real'], mode='lines', name='Real', fill='tozeroy'))
+        fig_combined.add_trace(go.Scatter(x=df['Date'], y=df['Real'], mode='lines', name='Real Data', fill='tozeroy'))
         fig_combined.add_trace(go.Scatter(x=df['Date'], y=df['Train Predict'], mode='lines', name='Train Predict', fill='tonexty'))
         fig_combined.add_trace(go.Scatter(x=df['Date'], y=df['Test Predict'], mode='lines', name='Test Predict', fill='tonexty'))
-        fig_combined.update_layout(title='Stock Price Prediction with Train and Test Points', xaxis_title='Date', yaxis_title='Price')
+        fig_combined.update_layout(
+            title='Comparison of Real Data and Predictions',
+            xaxis_title='Date',
+            yaxis_title='Price',
+            legend_title='Legend',
+            template='plotly_white'
+        )
         st.plotly_chart(fig_combined)
 
 
