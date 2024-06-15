@@ -131,7 +131,7 @@ if train_button:
         st.plotly_chart(fig_combined)
 
         # Tampilkan tabel jarak nilai
-            st.markdown("### Jarak Nilai antara Real dan Prediksi")
-            st.dataframe(df[['Date', 'Train Error', 'Test Error']])
+        st.markdown("### Jarak Nilai antara Real dan Prediksi")
+        st.dataframe(df[['Date', 'Train Error', 'Test Error']])
 
     st.success('Model training completed!')
