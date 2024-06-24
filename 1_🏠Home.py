@@ -46,7 +46,7 @@ def main():
         )
 
     # Tentukan tahun akhir sebagai 2024
-end_year = 2024
+    end_year = 2024
 
 # Sidebar to select the start year
     start_year = st.sidebar.selectbox("Periode Forecast", options=range(2021, datetime.now().year + 1), index=0)
