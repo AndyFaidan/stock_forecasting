@@ -72,7 +72,7 @@ with st.form(key='params_form'):
         st.markdown('<p class="params_text">Prediksi Saham Satu Tahun Berdasarkan Data Historis</p>', unsafe_allow_html=True)
         st.divider()
 
-        optimizers = ['adam', 'adamax', 'Stochastic Gradient Descent (SGD)', 'rmsprop'] 
+        optimizers = ['adam', 'adamax', 'sgd', 'rmsprop'] 
         optimizer = st.selectbox('Optimizer', optimizers, key='symbol_selectbox')
         
         n_lookback, n_forecast = st.columns(2)
