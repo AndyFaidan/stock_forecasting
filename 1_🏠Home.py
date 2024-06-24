@@ -45,8 +45,15 @@ def main():
             xaxis_type='date'
         )
 
-    # Sidebar to select the start year
-    start_year = st.sidebar.selectbox("Periode Forecast", options=range(2021, datetime.now().year + 1), index=0)
+    # Tentukan tahun akhir sebagai 2024
+end_year = 2024
+
+# Sidebar untuk memilih tahun mulai
+start_year = st.sidebar.selectbox("Periode Forecast", options=range(2021, end_year + 1), index=0)
+
+# Jika Anda ingin memastikan tanggal hingga 23 Juni 2024 secara spesifik, Anda bisa menambahkannya seperti ini:
+start_date = datetime(2021, 1, 1)
+end_date = datetime(2024, 6, 23)
 
     # Generate sparkline data
     np.random.seed(1)
