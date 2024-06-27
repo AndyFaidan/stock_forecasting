@@ -68,19 +68,28 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # Create the form
-st.sidebar.markdown('<p class="params_text">Prediksi Saham Satu Tahun Berdasarkan Data Historis</p>', unsafe_allow_html=True)
-st.sidebar.divider()
+with st.form(key='params_form'):
+        st.markdown('<p class="params_text">Prediksi Saham Satu Tahun Berdasarkan Data Historis</p>', unsafe_allow_html=True)
+        st.divider()
 
-optimizers = ['adam', 'adamax', 'sgd', 'rmsprop'] 
-optimizer = st.sidebar.selectbox('Optimizer', optimizers, key='symbol_selectbox')
+        optimizers = ['adam', 'adamax', 'sgd', 'rmsprop'] 
+        optimizer = st.selectbox('Optimizer', optimizers, key='symbol_selectbox')
+        
+        n_lookback, n_forecast = st.columns(2)
+        with n_lookback:
+            n_lookback = st.number_input('Lookback', min_value=1, max_value=500, value=164, step=1)
+        with n_forecast:
+            n_forecast = st.number_input('Forecast', min_value=10, max_value=730, value=365, step=1, key='period_no_input')
+        
+        epochs, batch_size = st.columns(2)
+        with epochs:
+            epochs = st.number_input('Epochs', min_value=1, value=100)
+        with batch_size:
+             batch_size = st.number_input('Batch Size', min_value=1, value=32)
 
-n_lookback = st.sidebar.number_input('Lookback', min_value=1, max_value=500, value=164, step=1)
-n_forecast = st.sidebar.number_input('Forecast', min_value=10, max_value=730, value=365, step=1, key='period_no_input')
-
-epochs = st.sidebar.number_input('Epochs', min_value=1, value=100)
-batch_size = st.sidebar.number_input('Batch Size', min_value=1, value=32)
-
-train_button = st.sidebar.button('Train Model')
+        st.markdown('')
+        train_button = st.form_submit_button('Train Model')
+        st.markdown('')
 
 if train_button:
     ticker = "KKGI.JK"
@@ -98,113 +107,130 @@ if train_button:
     Y_train, Y_test = Y[:train_size], Y[train_size:]
 
     model = Sequential([
-        LSTM(50, return_sequences=True, input_shape=(n_lookback, 1)),
-        LSTM(50, return_sequences=False),
-        Dense(1)
+        LSTM(units=50, return_sequences=True, input_shape=(n_lookback, 1)),
+        LSTM(units=50),
+        Dense(n_forecast)
     ])
     model.compile(optimizer=optimizer, loss='mean_squared_error')
     
-    model.fit(X_train, Y_train, validation_data=(X_test, Y_test), epochs=epochs, batch_size=batch_size, verbose=0)
+    eval_data = []
+    for epoch in range(epochs):
+        model.fit(X_train, Y_train, epochs=1, batch_size=batch_size, verbose=0)
+        Y_test_pred = model.predict(X_test)
+        Y_test_pred_rescaled = scaler.inverse_transform(Y_test_pred.reshape(-1, 1)).reshape(Y_test_pred.shape)
+        Y_test_rescaled = scaler.inverse_transform(Y_test.reshape(-1, 1)).reshape(Y_test.shape)
 
-    train_predict = model.predict(X_train)
-    test_predict = model.predict(X_test)
+        rmse = np.sqrt(mean_squared_error(Y_test_rescaled.flatten(), Y_test_pred_rescaled.flatten()))
+        mae = mean_absolute_error(Y_test_rescaled.flatten(), Y_test_pred_rescaled.flatten())
+        mse = mean_squared_error(Y_test_rescaled.flatten(), Y_test_pred_rescaled.flatten())
+        mape = np.mean(np.abs((Y_test_rescaled.flatten() - Y_test_pred_rescaled.flatten()) / Y_test_rescaled.flatten())) * 100
 
-    train_predict = scaler.inverse_transform(train_predict)
-    test_predict = scaler.inverse_transform(test_predict)
+        eval_data.append({
+            'Epochs': epoch + 1,
+            'Optimizer': optimizer,
+            'RMSE': rmse,
+            'MAE': mae,
+            'MSE': mse,
+            'MAPE': mape
+        })
 
-    real_data = scaler.inverse_transform(y_scaled).flatten()
-    train_data = pd.Series(index=data.index, data=[float('NaN')] * len(data))
-    train_data[n_lookback:len(train_predict) + n_lookback] = train_predict.flatten()
-    test_data = pd.Series(index=data.index, data=[float('NaN')] * len(data))
+    last_sequence = y_scaled[-n_lookback:].reshape(1, n_lookback, 1)
+    Y_ = model.predict(last_sequence)
+    Y_ = scaler.inverse_transform(Y_.flatten().reshape(-1, 1)).flatten()
 
-    # Calculate the starting index for the test data prediction
-    test_start_index = len(train_predict) + n_lookback
-    test_end_index = test_start_index + len(test_predict)
+    df_past = data[['Close']].reset_index()
+    df_past.rename(columns={'index': 'Date', 'Close': 'Actual'}, inplace=True)
+    df_past['Date'] = pd.to_datetime(df_past['Date'])
+    df_past['Forecast'] = np.nan
+    df_past['Forecast'].iloc[-1] = df_past['Actual'].iloc[-1]
 
-    # Ensure lengths match
-    if test_end_index <= len(test_data):
-        test_data[test_start_index:test_end_index] = test_predict.flatten()
-    else:
-        test_data[test_start_index:] = test_predict[:len(test_data) - test_start_index].flatten()
+    df_future = pd.DataFrame(columns=['Date', 'Actual', 'Forecast'])
+    df_future['Date'] = pd.date_range(start=df_past['Date'].iloc[-1] + pd.Timedelta(days=1), periods=n_forecast)
+    df_future['Forecast'] = Y_
+    df_future['Actual'] = np.nan
 
-    df = pd.DataFrame({
-        'Tanggal': data.index,
-        'Data Real': real_data,
-        'Prediksi Latih': train_data.values,
-        'Prediksi Uji': test_data.values,
-        'Open': data['Open'],
-        'High': data['High'],
-        'Low': data['Low'],
-        'Close': data['Close']
-    })
+    results = pd.concat([df_past, df_future]).set_index('Date')
+    mean_value = df_past['Actual'].mean()
+    results['Characteristic'] = np.where(results['Actual'].fillna(results['Forecast']) >= mean_value, 'high', 'low')
 
-    df['Kesalahan Latih'] = df.apply(lambda row: abs(row['Data Real'] - row['Prediksi Latih']) if pd.notnull(row['Prediksi Latih']) else None, axis=1)
-    df['Kesalahan Uji'] = df.apply(lambda row: abs(row['Data Real'] - row['Prediksi Uji']) if pd.notnull(row['Prediksi Uji']) else None, axis=1)
+    st.success('Model training completed!')
 
-    rata_kesalahan_latih = df['Kesalahan Latih'].mean()
-    rata_kesalahan_uji = df['Kesalahan Uji'].mean()
+    # Line chart of Actual vs Forecast
+    fig = px.line(results.reset_index(), x='Date', y=['Actual', 'Forecast'], title='Actual vs Forecast')
+    st.plotly_chart(fig, use_container_width=True)
 
-    st.success('Pelatihan model selesai!')
 
-    z1, z2 = st.columns((8, 2.5))
-    with z1:
-        fig = px.line(df, x='Tanggal', y=['Data Real', 'Prediksi Latih', 'Prediksi Uji'], title='Data Real dan Hasil Prediksi')
-        fig.update_xaxes(tickformat="%Y-%m-%d")
-        st.plotly_chart(fig)
+    # Evaluasi model
+    rmse, mae, mape, mse, _ = evaluate_model(model, X, Y, scaler)
 
-        fig_combined = go.Figure()
-        fig_combined.add_trace(go.Scatter(x=df['Tanggal'], y=df['Data Real'], mode='lines', name='Data Real', fill='tozeroy'))
-        fig_combined.add_trace(go.Scatter(x=df['Tanggal'], y=df['Prediksi Latih'], mode='lines', name='Prediksi Latih', fill='tonexty'))
-        fig_combined.add_trace(go.Scatter(x=df['Tanggal'], y=df['Prediksi Uji'], mode='lines', name='Prediksi Uji', fill='tonexty'))
-        fig_combined.update_layout(
-            title='Perbandingan Data Real dan Prediksi',
-            xaxis_title='Tanggal',
-            yaxis_title='Harga',
-            legend_title='Legenda',
-            template='plotly_white'
-        )
-        fig_combined.update_xaxes(tickformat="%Y-%m-%d")
-        st.plotly_chart(fig_combined)
+    # Mengonversi nilai-nilai menjadi persentase
+    mape = f"{mape:.2f}"  # Dua angka di belakang koma untuk MAPE
+    rmse = f"{rmse:.2f}"  # Dua angka di belakang koma untuk RMSE
+    mae = f"{mae:.2f}"  # Dua angka di belakang koma untuk MAE
+    mse = f"{mse:.2f}"  # Dua angka di belakang koma untuk MSE
 
-    with z2:
-        st.metric(label="Rata-rata Kesalahan Latih", value=f"{rata_kesalahan_latih:.2f}")
-        st.metric(label="Rata-rata Kesalahan Uji", value=f"{rata_kesalahan_uji:.2f}")
+    rmse_col, mae_col, mape_col, mse_col = st.columns(4)
 
+    with rmse_col:
+        with st.container(border=True):
+            st.markdown('<div class="box-shadow">', unsafe_allow_html=True)
+            st.markdown(f"**RMSE**: {rmse}")
+            st.markdown('</div>', unsafe_allow_html=True)
+
+    with mae_col:
+        with st.container(border=True):
+            st.markdown('<div class="box-shadow">', unsafe_allow_html=True)
+            st.markdown(f"**MAE**: {mae}")
+            st.markdown('</div>', unsafe_allow_html=True)
+
+    with mape_col:
+        with st.container(border=True):
+            st.markdown('<div class="box-shadow">', unsafe_allow_html=True)
+            st.markdown(f"**MAPE**: {mape}")
+            st.markdown('</div>', unsafe_allow_html=True)
+
+    with mse_col:
+        with st.container(border=True):
+            st.markdown('<div class="box-shadow">', unsafe_allow_html=True)
+            st.markdown(f"**MSE**: {mse}")
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+# Membagi layar menjadi dua kolom
     col1, col2 = st.columns(2)
+
+        # Menampilkan hasil pada kolom pertama
     with col1:
         st.subheader("Forecast Data")
-        st.write(df[df['Prediksi Uji'].notna()])
+        st.write(results[results['Forecast'].notna()])
 
+    # Menampilkan deskripsi hasil pada kolom kedua
     with col2:
         st.subheader("Description of Results")
-        st.write(df.describe())
-
+        st.write(results.describe())
+        # Menampilkan grafik dengan karakteristik high dan low di bawah deskripsi hasil
+       
     st.subheader("Forecast Characteristics")
 
-    mean_value = df['Data Real'].mean()
-    df['Characteristic'] = np.where(df['Data Real'].fillna(df['Prediksi Uji']) >= mean_value, 'high', 'low')
-
+        # Membuat plot dengan karakteristik high dan low
     fig_characteristics = go.Figure()
-    high_forecasts = df[df['Characteristic'] == 'high']
-    low_forecasts = df[df['Characteristic'] == 'low']
+# Filter high and low forecasts
+    high_forecasts = results[results['Characteristic'] == 'high']
+    low_forecasts = results[results['Characteristic'] == 'low']
 
+# Menggabungkan data prediksi karakteristik high dan low
     combined_forecasts = pd.concat([high_forecasts, low_forecasts], axis=0).sort_index()
 
+# Plot gabungan prediksi sebagai satu garis
     if not combined_forecasts.empty:
-        fig_characteristics.add_trace(go.Scatter(x=combined_forecasts['Tanggal'], y=combined_forecasts['Prediksi Uji'],
-                                                 mode='lines', line=dict(color='blue'), name='Forcast'))
+        fig_characteristics.add_trace(go.Scatter(x=combined_forecasts.index, y=combined_forecasts['Forecast'],
+                                             mode='lines', line=dict(color='blue'), name='Forcast'))
 
-    fig_characteristics.add_trace(go.Scatter(x=df['Tanggal'], y=[mean_value]*len(df['Tanggal']),
-                                             mode='lines', name='Mean', line=dict(color='green', width=2, dash='dash')))
+# Menambahkan garis lurus untuk mean
+    fig_characteristics.add_trace(go.Scatter(x=results.index, y=[mean_value]*len(results.index),
+                                         mode='lines', name='Mean', line=dict(color='green', width=2)))
 
-    fig_characteristics.update_layout(
-        title='Characteristics of the Forecast Data',
-        xaxis_title='Date',
-        yaxis_title='Forecast',
-        legend_title='Legend',
-        template='plotly_white'
-    )
-    st.plotly_chart(fig_characteristics)
+    fig_characteristics.update_layout(title='Forecast Grafik chart', xaxis_title='Date',
+                                  yaxis_title='Forecast', showlegend=True,
+                                  xaxis=dict(range=['2024-06-01', '2025-07-01']))
 
-    st.subheader('Raw Forecast Data')
-    st.write(df)
+    st.plotly_chart(fig_characteristics, use_container_width=True)
