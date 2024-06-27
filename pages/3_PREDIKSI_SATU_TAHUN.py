@@ -67,29 +67,22 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
+# Sidebar for input parameters
+st.sidebar.title('Model Parameters')
+
+optimizers = ['adam', 'adamax', 'sgd', 'rmsprop']
+optimizer = st.sidebar.selectbox('Optimizer', optimizers, index=0)
+
+n_lookback = st.sidebar.number_input('Lookback', min_value=1, max_value=500, value=164, step=1)
+n_forecast = st.sidebar.number_input('Forecast', min_value=10, max_value=730, value=365, step=1)
+
+epochs = st.sidebar.number_input('Epochs', min_value=1, value=100)
+batch_size = st.sidebar.number_input('Batch Size', min_value=1, value=32)
+
+st.sidebar.markdown('---')
+
 # Create the form
-with st.form(key='params_form'):
-    st.markdown('<p class="params_text">Prediksi Saham Satu Tahun Berdasarkan Data Historis</p>', unsafe_allow_html=True)
-    st.divider()
-
-    optimizers = ['adam', 'adamax', 'sgd', 'rmsprop'] 
-    optimizer = st.selectbox('Optimizer', optimizers, key='symbol_selectbox')
-    
-    n_lookback_col, n_forecast_col = st.columns(2)
-    with n_lookback_col:
-        n_lookback = st.number_input('Lookback', min_value=1, max_value=500, value=164, step=1)
-    with n_forecast_col:
-        n_forecast = st.number_input('Forecast', min_value=10, max_value=730, value=365, step=1, key='period_no_input')
-    
-    epochs_col, batch_size_col = st.columns(2)
-    with epochs_col:
-        epochs = st.number_input('Epochs', min_value=1, value=100)
-    with batch_size_col:
-        batch_size = st.number_input('Batch Size', min_value=1, value=32)
-
-    st.markdown('')
-    train_button = st.form_submit_button('Train Model')
-    st.markdown('')
+train_button = st.sidebar.button('Train Model')
 
 if train_button:
     ticker = "KKGI.JK"
@@ -215,7 +208,6 @@ if train_button:
     # Filter high and low forecasts
     high_forecasts = results[results['Characteristic'] == 'high']
     low_forecasts = results[results['Characteristic'] == 'low']
-
     # Menggabungkan data prediksi karakteristik high dan low
     combined_forecasts = pd.concat([high_forecasts, low_forecasts], axis=0).sort_index()
 
