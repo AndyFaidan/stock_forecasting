@@ -116,7 +116,16 @@ if train_button:
     train_data = pd.Series(index=data.index, data=[float('NaN')] * len(data))
     train_data[n_lookback:len(train_predict) + n_lookback] = train_predict.flatten()
     test_data = pd.Series(index=data.index, data=[float('NaN')] * len(data))
-    test_data[len(train_predict) + (n_lookback * 2):len(y_scaled)] = test_predict.flatten()
+
+    # Calculate the starting index for the test data prediction
+    test_start_index = len(train_predict) + n_lookback
+    test_end_index = test_start_index + len(test_predict)
+
+    # Ensure lengths match
+    if test_end_index <= len(test_data):
+        test_data[test_start_index:test_end_index] = test_predict.flatten()
+    else:
+        test_data[test_start_index:] = test_predict[:len(test_data) - test_start_index].flatten()
 
     df = pd.DataFrame({
         'Tanggal': data.index,
@@ -186,10 +195,16 @@ if train_button:
                                                  mode='lines', line=dict(color='blue'), name='Forcast'))
 
     fig_characteristics.add_trace(go.Scatter(x=df['Tanggal'], y=[mean_value]*len(df['Tanggal']),
-                                             mode='lines', name='Mean', line=dict(color='green', width=2)))
+                                             mode='lines', name='Mean', line=dict(color='green', width=2, dash='dash')))
 
-    fig_characteristics.update_layout(title='Forecast Grafik chart', xaxis_title='Date',
-                                      yaxis_title='Forecast', showlegend=True,
-                                      xaxis=dict(range=['2024-06-01', '2025-07-01']))
+    fig_characteristics.update_layout(
+        title='Characteristics of the Forecast Data',
+        xaxis_title='Date',
+        yaxis_title='Forecast',
+        legend_title='Legend',
+        template='plotly_white'
+    )
+    st.plotly_chart(fig_characteristics)
 
-    st.plotly_chart(fig_characteristics, use_container_width=True)
+    st.subheader('Raw Forecast Data')
+    st.write(df)
