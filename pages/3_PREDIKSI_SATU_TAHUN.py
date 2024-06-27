@@ -68,28 +68,19 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # Create the form
-with st.form(key='params_form'):
-        st.markdown('<p class="params_text">Prediksi Saham Satu Tahun Berdasarkan Data Historis</p>', unsafe_allow_html=True)
-        st.divider()
+st.sidebar.markdown('<p class="params_text">Prediksi Saham Satu Tahun Berdasarkan Data Historis</p>', unsafe_allow_html=True)
+st.sidebar.divider()
 
-        optimizers = ['adam', 'adamax', 'sgd', 'rmsprop'] 
-        optimizer = st.selectbox('Optimizer', optimizers, key='symbol_selectbox')
-        
-        n_lookback, n_forecast = st.columns(2)
-        with n_lookback:
-            n_lookback = st.number_input('Lookback', min_value=1, max_value=500, value=164, step=1)
-        with n_forecast:
-            n_forecast = st.number_input('Forecast', min_value=10, max_value=730, value=365, step=1, key='period_no_input')
-        
-        epochs, batch_size = st.columns(2)
-        with epochs:
-            epochs = st.number_input('Epochs', min_value=1, value=100)
-        with batch_size:
-             batch_size = st.number_input('Batch Size', min_value=1, value=32)
+optimizers = ['adam', 'adamax', 'sgd', 'rmsprop'] 
+optimizer = st.sidebar.selectbox('Optimizer', optimizers, key='symbol_selectbox')
 
-        st.markdown('')
-        train_button = st.form_submit_button('Train Model')
-        st.markdown('')
+n_lookback = st.sidebar.number_input('Lookback', min_value=1, max_value=500, value=164, step=1)
+n_forecast = st.sidebar.number_input('Forecast', min_value=10, max_value=730, value=365, step=1, key='period_no_input')
+
+epochs = st.sidebar.number_input('Epochs', min_value=1, value=100)
+batch_size = st.sidebar.number_input('Batch Size', min_value=1, value=32)
+
+train_button = st.sidebar.button('Train Model')
 
 if train_button:
     ticker = "KKGI.JK"
