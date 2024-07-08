@@ -10,6 +10,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import tensorflow as tf
 import random
+from streamlit_lightweight_charts import renderLightweightCharts  # Pastikan ini sudah terpasang
 
 # Set seed for reproducibility
 seed = 42
