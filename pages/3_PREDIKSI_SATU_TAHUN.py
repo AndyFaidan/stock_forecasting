@@ -21,15 +21,6 @@ random.seed(seed)
 if "symbols_list" not in st.session_state:
     st.session_state.symbols_list = None
 
-if "results" not in st.session_state:
-    st.session_state.results = None
-
-if "eval_data" not in st.session_state:
-    st.session_state.eval_data = None
-
-if "model_params" not in st.session_state:
-    st.session_state.model_params = {}
-
 st.set_page_config(
     layout='wide',
     page_title='LSTM FORECAST'
@@ -93,7 +84,7 @@ st.sidebar.markdown('---')
 # Create the form
 train_button = st.sidebar.button('Train Model')
 
-def train_and_predict():
+if train_button:
     ticker = "KKGI.JK"
     start_date = "2021-01-01"
     end_date = "2024-06-24"
@@ -157,31 +148,12 @@ def train_and_predict():
 
     st.success('Model training completed!')
 
-    st.session_state.results = results
-    st.session_state.eval_data = eval_data
-    st.session_state.model_params = {
-        'optimizer': optimizer,
-        'n_lookback': n_lookback,
-        'n_forecast': n_forecast,
-        'epochs': epochs,
-        'batch_size': batch_size,
-        'scaler': scaler
-    }
-
-if train_button:
-    train_and_predict()
-
-if st.session_state.results is not None:
-    results = st.session_state.results
-    eval_data = st.session_state.eval_data
-    model_params = st.session_state.model_params
-
     # Line chart of Actual vs Forecast
     fig = px.line(results.reset_index(), x='Date', y=['Actual', 'Forecast'], title='Actual vs Forecast')
     st.plotly_chart(fig, use_container_width=True)
 
     # Evaluasi model
-    rmse, mae, mape, mse, _ = evaluate_model(None, None, None, model_params['scaler'])  # Adjust as needed
+    rmse, mae, mape, mse, _ = evaluate_model(model, X, Y, scaler)
 
     # Mengonversi nilai-nilai menjadi persentase
     mape = f"{mape:.2f}"  # Dua angka di belakang koma untuk MAPE
@@ -252,4 +224,4 @@ if st.session_state.results is not None:
                                       yaxis_title='Forecast', showlegend=True,
                                       xaxis=dict(range=['2024-06-01', '2025-07-01']))
 
-    st.plotly_chart(fig_characteristics, use_container_width=True)
+    st.plotly_chart(fig_characteristics, use_container_width=True) script 
