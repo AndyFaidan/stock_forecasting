@@ -91,7 +91,7 @@ with st.form(key='params_form'):
 if train_button:
     ticker = "AAPL"
     start_date = "2021-01-01"
-    end_date = "2024-06-24"  
+    end_date = "2024-06-23"  
     data = yf.download(tickers=ticker, start=start_date, end=end_date)
     
     scaler = MinMaxScaler(feature_range=(0, 1))
