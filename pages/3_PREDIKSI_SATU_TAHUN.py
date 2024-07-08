@@ -1,421 +1,237 @@
 import streamlit as st
 import pandas as pd
-import yfinance as yf
 import numpy as np
+from keras.models import Sequential
+from keras.layers import LSTM, Dense
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import mean_squared_error, mean_absolute_error
+import yfinance as yf
 import plotly.express as px
-from datetime import datetime, date
-from PIL import Image
-from streamlit_lightweight_charts import renderLightweightCharts
 import plotly.graph_objects as go
-import streamlit as st
-import pandas as pd
-import yfinance as yf
-import numpy as np
-import plotly.express as px
-from datetime import datetime, date
-from PIL import Image
+import tensorflow as tf
+import random
 
-def main():
-    # Set page configuration
-    st.set_page_config(layout="wide", page_title="KKGI.JK DashBoard For LSTM")
+# Set seed for reproducibility
+seed = 42
+np.random.seed(seed)
+tf.random.set_seed(seed)
+random.seed(seed)
 
-    # Load custom styles
-    with open('style.css') as f:
-        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+if "symbols_list" not in st.session_state:
+    st.session_state.symbols_list = None
 
-    # Aplikasi Streamlit
-    st.title('PREDIKSI ANALISIS LSTM PADA SAHAM KKGI.JK')
-    # Fetch data from Yahoo Finance for KKGI.JK from 2021
-    ticker = "KKGI.JK"
-    data = yf.download(tickers=ticker, start='2021-01-01')
- 
-    def add_range_selector(fig):
-        fig.update_layout(
-            xaxis=dict(
-                rangeselector=dict(
-                    buttons=[
-                        dict(count=1, label='1m', step='month', stepmode='backward'),
-                        dict(count=6, label='6m', step='month', stepmode='backward'),
-                        dict(count=1, label='YTD', step='year', stepmode='todate'),
-                        dict(count=1, label='1y', step='year', stepmode='backward'),
-                        dict(step='all')
-                    ]
-                )
-            ),
-            xaxis_type='date'
-        )
+st.set_page_config(
+    layout='wide',
+    page_title='LSTM FORECAST'
+)
 
-    # Tentukan tahun akhir sebagai 2024
-end_year = 2024
 
-# Sidebar to select the start year
-    start_year = st.sidebar.selectbox("Periode Forecast", options=range(2021, datetime.now().year + 1), index=0)
+def visualize_training_data(data_train):
+    st.subheader('Training data Visualization')
+    st.line_chart(data_train)
 
-    # Generate sparkline data
-    np.random.seed(1)
-    y = data['Close'].values[-24:]  # Use the last 24 closing prices for sparkline
-    x = np.arange(len(y))
-    fig = px.line(x=x, y=y, width=400, height=100)
-    
-    xmin = x[0]
-    xmax = x[-1]
-    ymin = round(y[0], 1)
-    ymax = round(y[-1], 1)
+def generate_sequences(data, n_lookback, n_forecast):
+    X = []
+    Y = []
 
-    layout = {
-        "plot_bgcolor": "rgba(0, 0, 0, 0)",
-        "paper_bgcolor": "rgba(0, 0, 0, 0)",
-        "yaxis": {"visible": False},
-        "xaxis": {
-            "nticks": 2,
-            "tickmode": "array",
-            "tickvals": [xmin, xmax],
-            "ticktext": [f"{ymin} <br> {xmin}", f"{ymax} <br> {xmax}"],
-            "title_text": None
-        },
-        "showlegend": False,
-        "margin": {"l":4,"r":4,"t":0, "b":0, "pad": 4}
+    for i in range(n_lookback, len(data) - n_forecast + 1):
+        X.append(data[i - n_lookback: i])
+        Y.append(data[i: i + n_forecast])
+
+    X = np.array(X)
+    Y = np.array(Y)
+    return X, Y
+
+def evaluate_model(model, X_train, Y_train, scaler):
+    train_predictions = model.predict(X_train)
+    train_predictions = scaler.inverse_transform(train_predictions.reshape(-1, 1))
+    Y_train_inv = scaler.inverse_transform(Y_train.reshape(-1, 1))
+
+    rmse = np.sqrt(mean_squared_error(Y_train_inv, train_predictions))
+    mae = mean_absolute_error(Y_train_inv, train_predictions)
+    mape = np.mean(np.abs((Y_train_inv - train_predictions) / Y_train_inv)) * 100
+    mse = mean_squared_error(Y_train_inv, train_predictions)
+
+    return rmse, mae, mape, mse, train_predictions
+
+# Adding custom CSS to style the text
+st.markdown(
+    """
+    <style>
+    .params_text {
+        font-size: 24px;
+        text-align: center;
+        color: inherit; /* Keeps the same color as other text */
     }
-    config = {'displayModeBar': False}
+    .divider {
+        width: 100%;
+        border-top: 1px solid #e0e0e0;
+        margin: 10px 0;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
-    fig.update_layout(layout)
+with st.form(key='params_form'):
+        st.markdown('<p class="params_text">Forecasting Dengan LSTM</p>', unsafe_allow_html=True)
+        st.markdown('<hr class="divider">', unsafe_allow_html=True)
+        st.divider()
 
-        # Row A: Logo and basic metrics
-    a1, a2, a3 = st.columns(3)
-
-        # Calculate changes
-    highest_open_price_change = data['Open'].max() - data['Open'].iloc[-2]
-    highest_high_price_change = data['High'].min() - data['High'].iloc[-2]
-    highest_volume_change = data['Volume'].min() - data['Volume'].iloc[-2]
-
-    # Sparkline data untuk Open
-    sparkline_data_open = data['Open'].iloc[-24:]  # Mengambil 24 harga open terakhir
-    x_sparkline_open = np.arange(len(sparkline_data_open))
-
-    # Sparkline data untuk Close
-    sparkline_data_high = data['High'].iloc[-24:]  # Mengambil 24 harga penutupan terakhir
-    x_sparkline_high = np.arange(len(sparkline_data_high))
-
-    # Sparkline data untuk Volume
-    sparkline_data_volume = data['Volume'].iloc[-24:]  # Mengambil 24 volume terakhir
-    x_sparkline_volume = np.arange(len(sparkline_data_volume))
-
-    
-
-        # Metrik untuk Open, Close, dan Volume
-    with a1:
-        if highest_open_price_change >= 2021:
-            st.metric("Highest Open Price", f"${data['Open'].max():,.2f}", delta=f"+{highest_open_price_change:.2f}")
-        else:
-            st.metric("Highest Open Price", f"${data['Open'].max():,.2f}", delta=f"{highest_open_price_change:.2f}")
-        # Generate sparkline untuk Open
-        fig_sparkline_open = px.line(x=x_sparkline_open, y=sparkline_data_open, width=150, height=50)
-        fig_sparkline_open.update_layout(
-            {
-                "plot_bgcolor": "rgba(0, 0, 0, 0)",
-                "paper_bgcolor": "rgba(0, 0, 0, 0)",
-                "yaxis": {"visible": False},
-                "xaxis": {"visible": False},
-                "showlegend": False,
-                "margin": {"l":4,"r":4,"t":0, "b":0, "pad": 4}
-            }
-        )
-        st.plotly_chart(fig_sparkline_open, use_container_width=True)
-        st.markdown("<div style='text-align:center; color:green;'>OPEN KKGI.JK</div>", unsafe_allow_html=True)
-
-
-    with a2:
-        if highest_high_price_change >= 2021:
-            st.metric("Highest High Price", f"${data['High'].max():,.2f}", delta=f"+{highest_high_price_change:.2f}")
-        else:
-            st.metric("Highest High Price", f"${data['High'].max():,.2f}", delta=f"{highest_high_price_change:.2f}")
-        # Generate sparkline untuk High
-        fig_sparkline_high = px.line(x=x_sparkline_high, y=sparkline_data_high, width=150, height=50)
-        fig_sparkline_high.update_layout(
-            {
-                "plot_bgcolor": "rgba(0, 0, 0, 0)",
-                "paper_bgcolor": "rgba(0, 0, 0, 0)",
-                "yaxis": {"visible": False},
-                "xaxis": {"visible": False},
-                "showlegend": False,
-                "margin": {"l":4,"r":4,"t":0, "b":0, "pad": 4}
-            }
-        )
-        st.plotly_chart(fig_sparkline_high, use_container_width=True)
-        st.markdown("<div style='text-align:center; color:green;'>HIGH KKGI.JK</div>", unsafe_allow_html=True)
-
-    with a3:
-        if highest_volume_change >= 2021:
-            st.metric("Highest Volume", f"{data['Volume'].max():,.2f}", delta=f"+{highest_volume_change:.2f}")
-        else:
-            st.metric("Highest Volume", f"{data['Volume'].max():,.2f}", delta=f"{highest_volume_change:.2f}")
-        # Generate sparkline untuk Volume
-        fig_sparkline_volume = px.line(x=x_sparkline_volume, y=sparkline_data_volume, width=150, height=50)
-        fig_sparkline_volume.update_layout(
-            {
-                "plot_bgcolor": "rgba(0, 0, 0, 0)",
-                "paper_bgcolor": "rgba(0, 0, 0, 0)",
-                "yaxis": {"visible": False},
-                "xaxis": {"visible": False},
-                "showlegend": False,
-                "margin": {"l":4,"r":4,"t":0, "b":0, "pad": 4}
-            }
-        )
-        st.plotly_chart(fig_sparkline_volume, use_container_width=True)
-        st.markdown("<div style='text-align:center; color:green;'>VOLUME KKGI.JK</div>", unsafe_allow_html=True)
-
-
-    
-    # Calculate Year-over-Year (YoY) Change
-    data_filtered = data[data.index.year >= start_year]
-    latest_close_price = data_filtered['Close'].iloc[-1]
-    earliest_close_price = data_filtered['Close'].iloc[0]
-    yearly_change = ((latest_close_price - earliest_close_price) / earliest_close_price) * 100
-
-    # Calculate changes
-    highest_close_price_change = data['Close'].max() - data['Close'].iloc[-2]
-    lowest_close_price_change = data['Close'].min() - data['Close'].iloc[-2]
-    average_daily_volume_change = data['Volume'].mean() - data['Volume'].iloc[-2]
-    
-    # Row B: Financial metrics and charts
-    b1, b2, b3, b4 = st.columns(4)
-
-    # Calculate changes
-    highest_close_price_change = data['Close'].max() - data['Close'].iloc[-2]
-    lowest_close_price_change = data['Close'].min() - data['Close'].iloc[-2]
-    average_daily_volume_change = data['Volume'].mean() - data['Volume'].iloc[-2]
-
-    # Sparkline data untuk perubahan harga tertinggi
-    sparkline_data_b1 = data['Close'].iloc[-24:]  # Mengambil 24 harga penutupan terakhir
-    x_sparkline_b1 = np.arange(len(sparkline_data_b1))
-
-    # Sparkline data untuk perubahan harga terendah
-    sparkline_data_b2 = data['Close'].iloc[-24:]  # Mengambil 24 harga penutupan terakhir
-    x_sparkline_b2 = np.arange(len(sparkline_data_b2))
-
-    # Sparkline data untuk perubahan volume harian rata-rata
-    sparkline_data_b3 = data['Volume'].iloc[-24:]  # Mengambil 24 volume harian terakhir
-    x_sparkline_b3 = np.arange(len(sparkline_data_b3))
-
-    # Sparkline data untuk perubahan harga tertinggi
-    sparkline_data = data['Close'].iloc[-24:]  # Mengambil 24 harga penutupan terakhir
-    x_sparkline = np.arange(len(sparkline_data))
-
-    with b1:
-        if highest_close_price_change >= 2021:
-            st.metric("Highest Close Price", f"${data['Close'].max():,.2f}", delta=f"+{highest_close_price_change:.2f}")
-        else:
-            st.metric("Highest Close Price", f"${data['Close'].max():,.2f}", delta=f"{highest_close_price_change:.2f}")
-        # Generate sparkline untuk perubahan harga tertinggi
-        fig_sparkline_b1 = px.line(x=x_sparkline_b1, y=sparkline_data_b1, width=150, height=50)
-        fig_sparkline_b1.update_layout(
-            {
-                "plot_bgcolor": "rgba(0, 0, 0, 0)",
-                "paper_bgcolor": "rgba(0, 0, 0, 0)",
-                "yaxis": {"visible": False},
-                "xaxis": {"visible": False},
-                "showlegend": False,
-                "margin": {"l":4,"r":4,"t":0, "b":0, "pad": 4}
-            }
-        )
-        st.plotly_chart(fig_sparkline_b1, use_container_width=True)
-
-    with b2:
-        if lowest_close_price_change >= 2021:
-            st.metric("Lowest Close Price", f"${data['Close'].min():,.2f}", delta=f"+{lowest_close_price_change:.2f}")
-        else:
-            st.metric("Lowest Close Price", f"${data['Close'].min():,.2f}", delta=f"{lowest_close_price_change:.2f}")
-        # Generate sparkline untuk perubahan harga terendah
-        fig_sparkline_b2 = px.line(x=x_sparkline_b2, y=sparkline_data_b2, width=150, height=50)
-        fig_sparkline_b2.update_layout(
-            {
-                "plot_bgcolor": "rgba(0, 0, 0, 0)",
-                "paper_bgcolor": "rgba(0, 0, 0, 0)",
-                "yaxis": {"visible": False},
-                "xaxis": {"visible": False},
-                "showlegend": False,
-                "margin": {"l":4,"r":4,"t":0, "b":0, "pad": 4}
-            }
-        )
-        st.plotly_chart(fig_sparkline_b2, use_container_width=True)
-
-    with b3:
-        if average_daily_volume_change >= 2021:
-            st.metric("Average Daily Volume", f"{round(data['Volume'].mean(), 2):,.2f}", delta=f"+{average_daily_volume_change:.2f}")
-        else:
-            st.metric("Average Daily Volume", f"{round(data['Volume'].mean(), 2):,.2f}", delta=f"{average_daily_volume_change:.2f}")
-        # Generate sparkline untuk perubahan volume harian rata-rata
-        fig_sparkline_b3 = px.line(x=x_sparkline_b3, y=sparkline_data_b3, width=150, height=50)
-        fig_sparkline_b3.update_layout(
-            {
-                "plot_bgcolor": "rgba(0, 0, 0, 0)",
-                "paper_bgcolor": "rgba(0, 0, 0, 0)",
-                "yaxis": {"visible": False},
-                "xaxis": {"visible": False},
-                "showlegend": False,
-                "margin": {"l":4,"r":4,"t":0, "b":0, "pad": 4}
-            }
-        )
-        st.plotly_chart(fig_sparkline_b3, use_container_width=True)
-
-
-    with b4:
-        if start_year > 2013:
-            if yearly_change >= 0:
-                yearly_change_label = "Yearly Change (Increase)"
-            else:
-                yearly_change_label = "Yearly Change (Decrease)"
-            st.metric(label=yearly_change_label, value=f"{yearly_change:.2f}%", delta=f"{abs(yearly_change):.2f}%")
-            
-            # Generate sparkline untuk perubahan tahunan
-            fig_sparkline = px.line(x=x_sparkline, y=sparkline_data, width=150, height=50)
-            fig_sparkline.update_layout(
-                {
-                    "plot_bgcolor": "rgba(0, 0, 0, 0)",
-                    "paper_bgcolor": "rgba(0, 0, 0, 0)",
-                    "yaxis": {"visible": False},
-                    "xaxis": {"visible": False},
-                    "showlegend": False,
-                    "margin": {"l":4,"r":4,"t":0, "b":0, "pad": 4}
-                }
-            )
-            st.plotly_chart(fig_sparkline, use_container_width=True)
-
-
-    # Row C
-    c1, c2 = st.columns((7, 3))
-    with c1:
+        optimizers = ['adam', 'adamax', 'sgd', 'rmsprop'] 
+        optimizer = st.selectbox('Optimizer', optimizers, key='symbol_selectbox')
         
-        # Buat series data dari harga penutupan
-        kkgi_close_series = []
-        for index, row in data.iterrows():
-            kkgi_close_series.append({
-                "time": index.strftime('%Y-%m-%d'),
-                "value": row['Close']
-            })
-
-        priceVolumeChartOptions = {
-            "height": 400,
-            "rightPriceScale": {
-                "scaleMargins": {
-                    "top": 0.2,
-                    "bottom": 0.25,
-                },
-                "borderVisible": False,
-            },
-            "overlayPriceScales": {
-                "scaleMargins": {
-                    "top": 0.7,
-                    "bottom": 0,
-                }
-            },
-            "layout": {
-                "background": {
-                    "type": 'solid',
-                    "color": '#131722'
-                },
-                "textColor": '#d1d4dc',
-            },
-            "grid": {
-                "vertLines": {
-                    "color": 'rgba(42, 46, 57, 0)',
-                },
-                "horzLines": {
-                    "color": 'rgba(42, 46, 57, 0.6)',
-                }
-            }
-        }
-
-        priceVolumeSeries = [
-            {
-                "type": 'Area',
-                "data": kkgi_close_series,
-                "options": {
-                    "topColor": 'rgba(38,198,218, 0.56)',
-                    "bottomColor": 'rgba(38,198,218, 0.04)',
-                    "lineColor": 'rgba(38,198,218, 1)',
-                    "lineWidth": 2,
-                }
-            },
-            {
-                "type": 'Histogram',
-                "data": kkgi_close_series,  # Gunakan kembali data harga penutupan untuk histogram
-                "options": {
-                    "color": '#26a69a',
-                    "priceFormat": {
-                        "type": 'volume',
-                    },
-                    "priceScaleId": ""  # Set as an overlay setting,
-                },
-                "priceScale": {
-                    "scaleMargins": {
-                        "top": 0.7,
-                        "bottom": 0,
-                    }
-                }
-            }
-        ]
-        renderLightweightCharts([
-            {
-                "chart": priceVolumeChartOptions,
-                "series": priceVolumeSeries
-            }
-        ], 'priceAndVolume')
-    
-    # The KKGI.JK table:
-    with c2:
-        st.write("Real Data")
-        st.write(data)  # Menampilkan data KKGI.JK sebagai tabel
-
-        # Create candlestick chart
-    fig = go.Figure(data=[go.Candlestick(x=data.index,
-                    open=data['Open'],
-                    high=data['High'],
-                    low=data['Low'],
-                    close=data['Close'])])
-    # Set the color from white to black on range selector buttons
-    fig.update_layout(xaxis=dict(rangeselector = dict(font = dict( color = 'black'))))
-
-    st.info('''
-        Saham KKGI.JK adalah saham dari perusahaan PT Resource Alam Indonesia Tbk yang terdaftar di Bursa Efek Indonesia (BEI) dengan kode ticker KKGI. Berikut adalah beberapa informasi tentang perusahaan dan saham ini:
-        * **Nama Perusahaan:** PT Resource Alam Indonesia Tbk.
-        * **Kode Saham:** KKGI.JK
-        * **Industri** Pertambangan.
-        * **Produk Utama:** Nikel 
-        * **Deskripsi Singkat:** PT Resource Alam Indonesia Tbk adalah perusahaan yang bergerak di bidang pertambangan, terutama berfokus pada penambangan dan perdagangan Nikel. Selain Nikel , perusahaan ini juga memiliki usaha di bidang energi dan mineral lainnya.
-
-        ''', icon="🧐")
-
-
-    z1, z2 = st.columns((7, 3))
-    with z1:
-
-        #Create candlestick chart
-        fig = go.Figure(data=[go.Candlestick(x=data.index,
-                        open=data['Open'],
-                        high=data['High'],
-                        low=data['Low'],
-                        close=data['Close'])])
-
-        # Update layout
-        add_range_selector(fig)
-        fig.update_layout(
-            title="KKGI.JK - Candlestick Chart",
-            xaxis_title="Date",
-            yaxis_title="Price",
-            xaxis_rangeslider_visible=False,
-            height=500,
-            template="plotly_dark"
-        )
-
-        # Show the chart using Streamlit
-        st.plotly_chart(fig)
-    with z2:
-        # Create progress bar and table for open, high, low
-        st.write("Open, High, Low Table")
-        st.dataframe(data[['Open', 'High', 'Low']])
-
-    
+        n_lookback, n_forecast = st.columns(2)
+        with n_lookback:
+            n_lookback = st.number_input('Lookback', min_value=1, max_value=500, value=164, step=1)
+        with n_forecast:
+            n_forecast = st.number_input('Forecast', min_value=10, max_value=730, value=365, step=1, key='period_no_input')
         
-if __name__ == '__main__':
-    main()
+        epochs, batch_size = st.columns(2)
+        with epochs:
+            epochs = st.number_input('Epochs', min_value=1, value=200)
+        with batch_size:
+             batch_size = st.number_input('Batch Size', min_value=1, value=32)
+
+        st.markdown('')
+        train_button = st.form_submit_button('Train Model')
+        st.markdown('')
+
+if train_button:
+    data = yf.download(tickers='KKGI.JK', period='4y')
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    y = data['Close'].values.reshape(-1, 1)
+    y_scaled = scaler.fit_transform(y)
+
+    X, Y = generate_sequences(y_scaled, n_lookback, n_forecast)
+    train_size = int(len(X) * 0.8)
+    X_train, X_test = X[:train_size], X[train_size:]
+    Y_train, Y_test = Y[:train_size], Y[train_size:]
+
+    model = Sequential([
+        LSTM(units=50, return_sequences=True, input_shape=(n_lookback, 1)),
+        LSTM(units=50),
+        Dense(n_forecast)
+    ])
+    model.compile(optimizer=optimizer, loss='mean_squared_error')
+    
+    eval_data = []
+    for epoch in range(epochs):
+        model.fit(X_train, Y_train, epochs=1, batch_size=batch_size, verbose=0)
+        Y_test_pred = model.predict(X_test)
+        Y_test_pred_rescaled = scaler.inverse_transform(Y_test_pred.reshape(-1, 1)).reshape(Y_test_pred.shape)
+        Y_test_rescaled = scaler.inverse_transform(Y_test.reshape(-1, 1)).reshape(Y_test.shape)
+
+        rmse = np.sqrt(mean_squared_error(Y_test_rescaled.flatten(), Y_test_pred_rescaled.flatten()))
+        mae = mean_absolute_error(Y_test_rescaled.flatten(), Y_test_pred_rescaled.flatten())
+        mse = mean_squared_error(Y_test_rescaled.flatten(), Y_test_pred_rescaled.flatten())
+        mape = np.mean(np.abs((Y_test_rescaled.flatten() - Y_test_pred_rescaled.flatten()) / Y_test_rescaled.flatten())) * 100
+
+        eval_data.append({
+            'Epochs': epoch + 1,
+            'Optimizer': optimizer,
+            'RMSE': rmse,
+            'MAE': mae,
+            'MSE': mse,
+            'MAPE': mape
+        })
+
+    last_sequence = y_scaled[-n_lookback:].reshape(1, n_lookback, 1)
+    Y_ = model.predict(last_sequence)
+    Y_ = scaler.inverse_transform(Y_.flatten().reshape(-1, 1)).flatten()
+
+    df_past = data[['Close']].reset_index()
+    df_past.rename(columns={'index': 'Date', 'Close': 'Actual'}, inplace=True)
+    df_past['Date'] = pd.to_datetime(df_past['Date'])
+    df_past['Forecast'] = np.nan
+    df_past['Forecast'].iloc[-1] = df_past['Actual'].iloc[-1]
+
+    df_future = pd.DataFrame(columns=['Date', 'Actual', 'Forecast'])
+    df_future['Date'] = pd.date_range(start=df_past['Date'].iloc[-1] + pd.Timedelta(days=1), periods=n_forecast)
+    df_future['Forecast'] = Y_
+    df_future['Actual'] = np.nan
+
+    results = pd.concat([df_past, df_future]).set_index('Date')
+    mean_value = df_past['Actual'].mean()
+    results['Characteristic'] = np.where(results['Actual'].fillna(results['Forecast']) >= mean_value, 'high', 'low')
+
+    st.success('Model training completed!')
+
+    # Line chart of Actual vs Forecast
+    fig = px.line(results.reset_index(), x='Date', y=['Actual', 'Forecast'], title='Actual vs Forecast')
+    st.plotly_chart(fig, use_container_width=True)
+# Evaluasi model
+    rmse, mae, mape, mse, _ = evaluate_model(model, X, Y, scaler)
+
+    # Mengonversi nilai-nilai menjadi persentase
+    mape = f"{mape:.2f}"  # Dua angka di belakang koma untuk MAPE
+    rmse = f"{rmse:.2f}"  # Dua angka di belakang koma untuk RMSE
+    mae = f"{mae:.2f}"  # Dua angka di belakang koma untuk MAE
+    mse = f"{mse:.2f}"  # Dua angka di belakang koma untuk MSE
+
+    rmse_col, mae_col, mape_col, mse_col = st.columns(4)
+
+    with rmse_col:
+        with st.container(border=True):
+            st.markdown('<div class="box-shadow">', unsafe_allow_html=True)
+            st.markdown(f"**RMSE**: {rmse}")
+            st.markdown('</div>', unsafe_allow_html=True)
+
+    with mae_col:
+        with st.container(border=True):
+            st.markdown('<div class="box-shadow">', unsafe_allow_html=True)
+            st.markdown(f"**MAE**: {mae}")
+            st.markdown('</div>', unsafe_allow_html=True)
+
+    with mape_col:
+        with st.container(border=True):
+            st.markdown('<div class="box-shadow">', unsafe_allow_html=True)
+            st.markdown(f"**MAPE**: {mape}")
+            st.markdown('</div>', unsafe_allow_html=True)
+
+    with mse_col:
+        with st.container(border=True):
+            st.markdown('<div class="box-shadow">', unsafe_allow_html=True)
+            st.markdown(f"**MSE**: {mse}")
+            st.markdown('</div>', unsafe_allow_html=True)
+
+    # Membagi layar menjadi dua kolom
+    col1, col2 = st.columns(2)
+
+        # Menampilkan hasil pada kolom pertama
+    with col1:
+        st.subheader("Forecast Data")
+        st.write(results[results['Forecast'].notna()])
+
+    # Menampilkan deskripsi hasil pada kolom kedua
+    with col2:
+        st.subheader("Description of Results")
+        st.write(results.describe())
+        # Menampilkan grafik dengan karakteristik high dan low di bawah deskripsi hasil
+       
+
+    st.subheader("Forecast Characteristics")
+
+        # Membuat plot dengan karakteristik high dan low
+    fig_characteristics = go.Figure()
+# Filter high and low forecasts
+    high_forecasts = results[results['Characteristic'] == 'high']
+    low_forecasts = results[results['Characteristic'] == 'low']
+
+# Menggabungkan data prediksi karakteristik high dan low
+    combined_forecasts = pd.concat([high_forecasts, low_forecasts], axis=0).sort_index()
+
+# Plot gabungan prediksi sebagai satu garis
+    if not combined_forecasts.empty:
+        fig_characteristics.add_trace(go.Scatter(x=combined_forecasts.index, y=combined_forecasts['Forecast'],
+                                             mode='lines', line=dict(color='purple'), name='Forcast'))
+
+# Menambahkan garis lurus untuk mean
+    fig_characteristics.add_trace(go.Scatter(x=results.index, y=[mean_value]*len(results.index),
+                                         mode='lines', name='Mean', line=dict(color='green', width=2)))
+
+    fig_characteristics.update_layout(title='Forecast Grafik chart', xaxis_title='Date',
+                                  yaxis_title='Forecast', showlegend=True,
+                                  xaxis=dict(range=['2024-06-01', '2025-07-01']))
+
+    st.plotly_chart(fig_characteristics, use_container_width=True)
