@@ -17,7 +17,7 @@ np.random.seed(seed)
 tf.random.set_seed(seed)
 random.seed(seed)
 
-if "symbols_list" not in st.session_state:
+    if "symbols_list" not in st.session_state:
     st.session_state.symbols_list = None
 
 st.set_page_config(
