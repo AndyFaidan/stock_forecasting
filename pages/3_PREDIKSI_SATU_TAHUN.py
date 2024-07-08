@@ -203,3 +203,30 @@ if train_button:
     with col2:
         st.subheader("Description of Results")
         st.write(results.describe())
+ # Menampilkan grafik dengan karakteristik high dan low di bawah deskripsi hasil
+       
+    st.subheader("Forecast Characteristics")
+
+        # Membuat plot dengan karakteristik high dan low
+    fig_characteristics = go.Figure()
+# Filter high and low forecasts
+    high_forecasts = results[results['Characteristic'] == 'high']
+    low_forecasts = results[results['Characteristic'] == 'low']
+
+# Menggabungkan data prediksi karakteristik high dan low
+    combined_forecasts = pd.concat([high_forecasts, low_forecasts], axis=0).sort_index()
+
+# Plot gabungan prediksi sebagai satu garis
+    if not combined_forecasts.empty:
+        fig_characteristics.add_trace(go.Scatter(x=combined_forecasts.index, y=combined_forecasts['Forecast'],
+                                             mode='lines', line=dict(color='blue'), name='Forcast'))
+
+# Menambahkan garis lurus untuk mean
+    fig_characteristics.add_trace(go.Scatter(x=results.index, y=[mean_value]*len(results.index),
+                                         mode='lines', name='Mean', line=dict(color='green', width=2)))
+
+    fig_characteristics.update_layout(title='Forecast Grafik chart', xaxis_title='Date',
+                                  yaxis_title='Forecast', showlegend=True,
+                                  xaxis=dict(range=['2024-06-01', '2025-07-01']))
+
+    st.plotly_chart(fig_characteristics, use_container_width=True)
