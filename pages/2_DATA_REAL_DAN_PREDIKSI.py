@@ -19,7 +19,7 @@ with open('style.css') as f:
 # Function to create LSTM model
 def create_LSTM_model(time_step, epochs, batch_size, optimizer):
     # Step 1: Load the Data from Yahoo Finance
-    data = yf.download('KKGI.JK', start='2020-01-01', end=datetime.now())
+    data = yf.download('ANTM', start='2020-01-01', end=datetime.now())
 
     # Step 2: Preprocess the Data
     scaler = MinMaxScaler(feature_range=(0, 1))
